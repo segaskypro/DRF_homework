@@ -4,7 +4,8 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from users.views import UserViewSet, PaymentViewSet, RegisterView
-from lms.views import CourseViewSet, LessonListCreateView, LessonRetrieveUpdateDestroyView
+from lms.views import CourseViewSet, LessonListCreateView, LessonRetrieveUpdateDestroyView, SubscriptionView
+
 
 # Роутер для ViewSet
 router = DefaultRouter()
@@ -22,4 +23,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/lessons/', LessonListCreateView.as_view(), name='lesson-list-create'),
     path('api/lessons/<int:pk>/', LessonRetrieveUpdateDestroyView.as_view(), name='lesson-detail'),
+    path('api/subscribe/', SubscriptionView.as_view(), name='subscription'),
 ]
