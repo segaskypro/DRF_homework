@@ -13,6 +13,7 @@ from .paginators import CoursePaginator, LessonPaginator
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    pagination_class = CoursePaginator
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['title']
     ordering_fields = ['title']

@@ -1,10 +1,13 @@
 from rest_framework import serializers
-from .models import Course, Lesson
+from .models import Course, Lesson, Subscription
 from .validators import validate_youtube_url, YouTubeValidator
 
 
 class CourseSerializer(serializers.ModelSerializer):
     owner_email = serializers.EmailField(source='owner.email', read_only=True)
+
+    is_subscribed = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Course
