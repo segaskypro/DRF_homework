@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CourseViewSet, LessonListCreateView, LessonRetrieveUpdateDestroyView
+from .views import CourseViewSet, LessonListCreateView, LessonRetrieveUpdateDestroyView, PaymentViewSet
 
 
 router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='course')
+router.register(r'payments', PaymentViewSet, basename='payment')
 
 urlpatterns = [
 
