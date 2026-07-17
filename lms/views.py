@@ -1,6 +1,15 @@
 from rest_framework import viewsets, generics, permissions
 from .models import Course, Lesson, Payment
 from .serializers import CourseSerializer, LessonSerializer, PaymentSerializer
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .services.stripe_service import (
+    create_stripe_product,
+    create_stripe_price,
+    create_checkout_session
+)
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -39,3 +48,75 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """При создании платежа автоматически подставляется текущий пользователь"""
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def create_payment(self, request):
+        """Создание платежа через Stripe"""
+        user = request.user
+        course_id = request.data.get('course_id')
+
+        if not course_id:
+            return Response(
+                {'error': 'Не указан ID курса'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        course = get_object_or_404(Course, id=course_id)
+
+        # Проверка цены
+        if not course.price or course.price <= 0:
+            return Response(
+                {'error': 'Курс бесплатный или цена не указана'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Проверка, не оплачен ли уже курс
+        existing_payment = Payment.objects.filter(
+            user=user,
+            course=course,
+            status=Payment.StatusChoices.PAID
+        ).exists()
+
+        if existing_payment:
+            return Response(
+                {'error': 'Курс уже оплачен'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # 1. Создаём продукт в Stripe
+            product_id = create_stripe_product(course)
+
+            # 2. Создаём цену в Stripe
+            price_id = create_stripe_price(product_id, float(course.price))
+
+            # 3. Создаём сессию оплаты
+            session_id, payment_url = create_checkout_session(
+                price_id,
+                course.id,
+                user.id
+            )
+
+            # 4. Сохраняем платёж в базе
+            payment = Payment.objects.create(
+                user=user,
+                course=course,
+                amount=course.price,
+                status=Payment.StatusChoices.PENDING,
+                stripe_product_id=product_id,
+                stripe_price_id=price_id,
+                stripe_session_id=session_id,
+                payment_url=payment_url
+            )
+
+            return Response({
+                'payment_id': payment.id,
+                'payment_url': payment_url,
+                'status': payment.status
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
