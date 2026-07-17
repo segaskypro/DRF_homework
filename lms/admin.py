@@ -1,7 +1,5 @@
-# lms/admin.py
-
 from django.contrib import admin
-from .models import Course, Lesson
+from .models import Course, Lesson, Payment
 
 
 @admin.register(Course)
@@ -20,3 +18,19 @@ class LessonAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description']
     raw_id_fields = ['owner', 'course']
     readonly_fields = ['owner']
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'course', 'amount', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['user__email', 'course__title']
+    raw_id_fields = ['user', 'course']
+    readonly_fields = [
+        'stripe_product_id',
+        'stripe_price_id',
+        'stripe_session_id',
+        'payment_url',
+        'created_at',
+        'updated_at'
+    ]

@@ -5,8 +5,8 @@ from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 
-from .models import Course, Lesson, Subscription
-from .serializers import CourseSerializer, LessonSerializer
+from .models import Course, Lesson, Subscription, Payment
+from .serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 from .permissions import IsModerator, IsOwner, IsModeratorOrOwner
 from .paginators import CoursePaginator, LessonPaginator
 
@@ -136,3 +136,19 @@ class SubscriptionView(APIView):
             "message": message,
             "is_subscribed": is_subscribed
         })
+
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    """ViewSet для управления платежами"""
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Payment.objects.all()
+        return Payment.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

@@ -3,12 +3,11 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.filters import OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import User, Payment
-from .serializers import UserSerializer, PaymentSerializer, UserCreateSerializer
-from .permissions import IsOwner, IsOwnerOrReadOnly
+
+from .models import User
+from .serializers import UserSerializer, UserCreateSerializer
+from .permissions import IsOwner
 
 
 class RegisterView(generics.CreateAPIView):
@@ -105,52 +104,3 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class PaymentViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet для модели Payment.
-
-    Пользователь может видеть только свои платежи.
-    """
-
-    serializer_class = PaymentSerializer
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['paid_course', 'paid_lesson', 'payment_method']
-    ordering_fields = ['payment_date']
-    ordering = ['-payment_date']
-
-    def get_permissions(self):
-        """
-        Только авторизованные пользователи могут работать с платежами.
-        """
-        if self.action == 'create':
-            # Создание платежа - только авторизованные
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action in ['list', 'retrieve']:
-            # Просмотр платежей - только авторизованные
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action in ['update', 'partial_update', 'destroy']:
-            # Изменение/удаление платежа - только владелец
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAuthenticated]
-
-        return [permission() for permission in permission_classes]
-
-    def get_queryset(self):
-        """
-        Фильтруем платежи: пользователь видит только свои.
-        """
-        user = self.request.user
-
-        # Для суперпользователей показываем все
-        if user.is_superuser:
-            return Payment.objects.all()
-
-        # Обычные пользователи видят только свои платежи
-        return Payment.objects.filter(user=user)
-
-    def perform_create(self, serializer):
-        """
-        При создании платежа автоматически привязываем текущего пользователя.
-        """
-        serializer.save(user=self.request.user)
