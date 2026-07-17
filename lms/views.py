@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from .services.stripe_service import retrieve_session
 from .services.stripe_service import (
     create_stripe_product,
     create_stripe_price,
@@ -120,3 +121,58 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    @action(detail=True, methods=['get'])
+    def status(self, request, pk=None):
+        """Проверка статуса платежа"""
+        payment = get_object_or_404(Payment, id=pk, user=request.user)
+
+        try:
+            session = retrieve_session(payment.stripe_session_id)
+
+            if session.payment_status == 'paid':
+                payment.status = Payment.StatusChoices.PAID
+                payment.save()
+            elif session.payment_status == 'unpaid':
+                payment.status = Payment.StatusChoices.PENDING
+                payment.save()
+
+            return Response({
+                'id': payment.id,
+                'status': payment.status,
+                'amount': payment.amount,
+                'course': payment.course.title,
+                'paid': session.payment_status == 'paid',
+                'payment_url': payment.payment_url
+            })
+
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['get'])
+    def success(self, request):
+        """Callback успешной оплаты"""
+        session_id = request.query_params.get('session_id')
+        if session_id:
+            try:
+                payment = Payment.objects.get(stripe_session_id=session_id)
+                payment.status = Payment.StatusChoices.PAID
+                payment.save()
+                return Response({'message': 'Оплата прошла успешно!'})
+            except Payment.DoesNotExist:
+                return Response(
+                    {'error': 'Платеж не найден'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        return Response(
+            {'error': 'Не указан ID сессии'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=False, methods=['get'])
+    def cancel(self, request):
+        """Callback отмены оплаты"""
+        return Response({'message': 'Оплата отменена'})
