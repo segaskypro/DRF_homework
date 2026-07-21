@@ -9,6 +9,8 @@ from .models import Course, Lesson, Subscription, Payment
 from .serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 from .permissions import IsModerator, IsOwner, IsModeratorOrOwner
 from .paginators import CoursePaginator, LessonPaginator
+from .tasks import send_course_update_notification
+
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
@@ -44,6 +46,15 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        Переопределяем метод обновления курса.
+        После сохранения отправляем уведомления подписчикам.
+        """
+        course = serializer.save()
+        # Отправляем уведомления подписчикам (без проверки на 4 часа)
+        send_course_update_notification.delay(course.id, course.title)
 
 
 class LessonListCreateView(generics.ListCreateAPIView):

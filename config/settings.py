@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'django_filters',
     'users',
     'lms',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +149,36 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # Токен живет 30 минут
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # Refresh токен живет 1 день
 }
+
+load_dotenv()
+
+
+# Email настройки
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'segaskypro@gmail.com'
+EMAIL_HOST_PASSWORD = '12345qwe'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Redis настройки
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+REDIS_DB = os.getenv('REDIS_DB', '0')
+
+# Celery настройки
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
+CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Принудительно используем старый протокол для Redis 8.x
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'protocol': 2,
+    'socket_connect_timeout': 5,
+    'retry_on_timeout': True,
+}
+
+# Отключаем новые команды Redis
+CELERY_REDIS_PROTOCOL = 2
