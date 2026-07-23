@@ -9,6 +9,14 @@ from .models import Course, Lesson, Subscription, Payment
 from .serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 from .permissions import IsModerator, IsOwner, IsModeratorOrOwner
 from .paginators import CoursePaginator, LessonPaginator
+from .tasks import send_course_update_notification
+from rest_framework.decorators import action
+from .services.stripe_service import (
+    create_stripe_product,
+    create_stripe_price,
+    create_checkout_session,
+    retrieve_session
+)
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
@@ -139,16 +147,81 @@ class SubscriptionView(APIView):
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления платежами"""
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_superuser:
-            return Payment.objects.all()
-        return Payment.objects.filter(user=user)
+        return self.queryset.filter(user=self.request.user)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    @action(detail=False, methods=['post'], url_path='create-payment')
+    def create_payment(self, request):
+        user = request.user
+        course_id = request.data.get('course_id')
+
+        if not course_id:
+            return Response(
+                {'error': 'Не указан ID курса'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        course = get_object_or_404(Course, id=course_id)
+
+        if Payment.objects.filter(user=user, course=course, status='paid').exists():
+            return Response(
+                {'error': 'Курс уже оплачен'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            product_id = create_stripe_product(course)
+            price_id = create_stripe_price(product_id, float(course.price))
+            session_id, payment_url = create_checkout_session(
+                price_id=price_id,
+                course_id=course.id,
+                user_id=user.id
+            )
+
+            payment = Payment.objects.create(
+                user=user,
+                course=course,
+                amount=course.price,
+                status=Payment.StatusChoices.PENDING,
+                stripe_product_id=product_id,
+                stripe_price_id=price_id,
+                stripe_session_id=session_id,
+                payment_url=payment_url
+            )
+
+            return Response({
+                'payment_id': payment.id,
+                'payment_url': payment_url,
+                'status': payment.status,
+                'message': 'Платеж создан. Перейдите по ссылке для оплаты.'
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['get'], url_path='check-status')
+    def check_status(self, request, pk=None):
+        payment = self.get_object()
+        try:
+            session = retrieve_session(payment.stripe_session_id)
+            if session.payment_status == 'paid':
+                payment.status = Payment.StatusChoices.PAID
+            elif session.payment_status == 'unpaid':
+                payment.status = Payment.StatusChoices.PENDING
+            payment.save()
+            return Response({
+                'status': payment.status,
+                'paid': payment.status == Payment.StatusChoices.PAID
+            })
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
