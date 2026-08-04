@@ -9,6 +9,8 @@ from rest_framework import permissions
 from users.views import UserViewSet, RegisterView
 from lms.views import CourseViewSet, LessonListCreateView, LessonRetrieveUpdateDestroyView, SubscriptionView, PaymentViewSet
 
+from django.http import HttpResponse
+
 # Настройка Swagger
 schema_view = get_schema_view(
     openapi.Info(
@@ -24,6 +26,10 @@ router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'payments', PaymentViewSet, basename='payment')
 router.register(r'courses', CourseViewSet, basename='course')
+
+def home(request):
+    return HttpResponse("Добро пожаловать в LMS!")
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
