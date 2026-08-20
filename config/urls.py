@@ -32,6 +32,7 @@ def home(request):
 
 
 urlpatterns = [
+    path('', home),
     path('admin/', admin.site.urls),
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
