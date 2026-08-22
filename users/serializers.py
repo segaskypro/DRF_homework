@@ -2,17 +2,13 @@ from rest_framework import serializers
 from .models import User
 
 
-
-
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User с историей платежей"""
 
-    
     class Meta:
         model = User
         fields = ['id', 'email', 'phone', 'city', 'avatar', 'payments']
         read_only_fields = ['id', 'email']
-
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -33,12 +29,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'password_confirm', 'phone', 'city', 'avatar']
+        fields = ['email', 'password',
+                  'password_confirm', 'phone', 'city', 'avatar']
 
     def validate_email(self, value):
         """Проверяем, что email уникален"""
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Пользователь с таким email уже существует')
+            raise serializers.ValidationError(
+                'Пользователь с таким email уже существует')
         return value
 
     def validate(self, data):
@@ -55,7 +53,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         user = User.objects.create_user(**validated_data)
         return user
-
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

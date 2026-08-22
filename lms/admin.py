@@ -9,15 +9,12 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description']
 
 
-
-
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'course', 'owner']
     list_filter = ['course', 'owner']
     search_fields = ['title', 'description']
     raw_id_fields = ['owner', 'course']
-
 
 
 @admin.register(Payment)

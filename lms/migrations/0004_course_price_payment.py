@@ -16,22 +16,34 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='course',
             name='price',
-            field=models.DecimalField(decimal_places=2, default=0.0, max_digits=10, verbose_name='Цена курса'),
+            field=models.DecimalField(
+                decimal_places=2, default=0.0, max_digits=10, verbose_name='Цена курса'),
         ),
         migrations.CreateModel(
             name='Payment',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Сумма платежа')),
-                ('status', models.CharField(choices=[('pending', 'Ожидание оплаты'), ('paid', 'Оплачено'), ('failed', 'Ошибка оплаты'), ('canceled', 'Отменен')], default='pending', max_length=20, verbose_name='Статус')),
-                ('stripe_product_id', models.CharField(blank=True, max_length=255, null=True, verbose_name='ID продукта в Stripe')),
-                ('stripe_price_id', models.CharField(blank=True, max_length=255, null=True, verbose_name='ID цены в Stripe')),
-                ('stripe_session_id', models.CharField(blank=True, max_length=255, null=True, verbose_name='ID сессии в Stripe')),
-                ('payment_url', models.URLField(blank=True, max_length=500, null=True, verbose_name='Ссылка на оплату')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Дата обновления')),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to='lms.course', verbose_name='Курс')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('amount', models.DecimalField(decimal_places=2,
+                 max_digits=10, verbose_name='Сумма платежа')),
+                ('status', models.CharField(choices=[('pending', 'Ожидание оплаты'), ('paid', 'Оплачено'), (
+                    'failed', 'Ошибка оплаты'), ('canceled', 'Отменен')], default='pending', max_length=20, verbose_name='Статус')),
+                ('stripe_product_id', models.CharField(
+                    blank=True, max_length=255, null=True, verbose_name='ID продукта в Stripe')),
+                ('stripe_price_id', models.CharField(blank=True,
+                 max_length=255, null=True, verbose_name='ID цены в Stripe')),
+                ('stripe_session_id', models.CharField(blank=True,
+                 max_length=255, null=True, verbose_name='ID сессии в Stripe')),
+                ('payment_url', models.URLField(blank=True, max_length=500,
+                 null=True, verbose_name='Ссылка на оплату')),
+                ('created_at', models.DateTimeField(
+                    auto_now_add=True, verbose_name='Дата создания')),
+                ('updated_at', models.DateTimeField(
+                    auto_now=True, verbose_name='Дата обновления')),
+                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                 related_name='payments', to='lms.course', verbose_name='Курс')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                 related_name='payments', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
             ],
             options={
                 'verbose_name': 'Платеж',

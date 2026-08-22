@@ -33,6 +33,7 @@ class RegisterView(generics.CreateAPIView):
             'access': str(refresh.access_token),
         }, status=status.HTTP_201_CREATED)
 
+
 class UserViewSet(viewsets.ModelViewSet):
     """
     ViewSet для модели User.
@@ -102,5 +103,3 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
-
-

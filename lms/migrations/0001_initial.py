@@ -35,7 +35,8 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "description",
-                    models.TextField(blank=True, null=True, verbose_name="Описание"),
+                    models.TextField(blank=True, null=True,
+                                     verbose_name="Описание"),
                 ),
             ],
             options={
@@ -58,7 +59,8 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(max_length=200, verbose_name="Название")),
                 (
                     "description",
-                    models.TextField(blank=True, null=True, verbose_name="Описание"),
+                    models.TextField(blank=True, null=True,
+                                     verbose_name="Описание"),
                 ),
                 (
                     "preview",

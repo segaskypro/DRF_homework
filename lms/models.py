@@ -6,8 +6,10 @@ class Course(models.Model):
     """Модель курса"""
 
     title = models.CharField(max_length=200, verbose_name="Название")
-    preview = models.ImageField(upload_to='courses/previews/', blank=True, null=True, verbose_name="Превью")
-    description = models.TextField(blank=True, null=True, verbose_name="Описание")
+    preview = models.ImageField(
+        upload_to='courses/previews/', blank=True, null=True, verbose_name="Превью")
+    description = models.TextField(
+        blank=True, null=True, verbose_name="Описание")
 
     price = models.DecimalField(
         max_digits=10,
@@ -30,8 +32,6 @@ class Course(models.Model):
         verbose_name="Дата последнего обновления"
     )
 
-
-
     def __str__(self):
         return self.title
 
@@ -44,10 +44,12 @@ class Lesson(models.Model):
     """Модель урока"""
 
     title = models.CharField(max_length=200, verbose_name="Название")
-    description = models.TextField(blank=True, null=True, verbose_name="Описание")
-    preview = models.ImageField(upload_to='lessons/previews/', blank=True, null=True, verbose_name="Превью")
-    video_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="Ссылка на видео")
-
+    description = models.TextField(
+        blank=True, null=True, verbose_name="Описание")
+    preview = models.ImageField(
+        upload_to='lessons/previews/', blank=True, null=True, verbose_name="Превью")
+    video_url = models.URLField(
+        max_length=500, blank=True, null=True, verbose_name="Ссылка на видео")
 
     course = models.ForeignKey(
         Course,
@@ -64,8 +66,6 @@ class Lesson(models.Model):
         null=True,
         blank=True
     )
-
-
 
     def __str__(self):
         return self.title

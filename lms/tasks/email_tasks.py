@@ -11,7 +11,8 @@ def send_course_update_notification(course_id, course_title):
     Задача для отправки уведомлений подписчикам курса о его обновлении
     """
     # Получаем всех подписчиков курса
-    subscriptions = Subscription.objects.filter(course_id=course_id).select_related('user')
+    subscriptions = Subscription.objects.filter(
+        course_id=course_id).select_related('user')
 
     if not subscriptions.exists():
         return f"Нет подписчиков для курса {course_title}"

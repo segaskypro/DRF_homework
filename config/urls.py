@@ -27,6 +27,7 @@ router.register(r'users', UserViewSet, basename='user')
 router.register(r'payments', PaymentViewSet, basename='payment')
 router.register(r'courses', CourseViewSet, basename='course')
 
+
 def home(request):
     return HttpResponse("Добро пожаловать в LMS!")
 
@@ -39,9 +40,12 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include(router.urls)),
     path('api/lessons/', LessonListCreateView.as_view(), name='lesson-list-create'),
-    path('api/lessons/<int:pk>/', LessonRetrieveUpdateDestroyView.as_view(), name='lesson-detail'),
+    path('api/lessons/<int:pk>/',
+         LessonRetrieveUpdateDestroyView.as_view(), name='lesson-detail'),
     path('api/subscribe/', SubscriptionView.as_view(), name='subscription'),
     # Swagger
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('swagger/', schema_view.with_ui('swagger',
+         cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc',
+         cache_timeout=0), name='schema-redoc'),
 ]

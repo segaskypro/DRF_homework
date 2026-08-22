@@ -27,9 +27,11 @@ class CourseViewSet(viewsets.ModelViewSet):
         elif self.action == 'list':
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ['retrieve']:
-            permission_classes = [permissions.IsAuthenticated, IsModeratorOrOwner]
+            permission_classes = [
+                permissions.IsAuthenticated, IsModeratorOrOwner]
         elif self.action in ['update', 'partial_update']:
-            permission_classes = [permissions.IsAuthenticated, IsModeratorOrOwner]
+            permission_classes = [
+                permissions.IsAuthenticated, IsModeratorOrOwner]
         elif self.action == 'destroy':
             permission_classes = [permissions.IsAuthenticated, IsOwner]
         else:
@@ -93,9 +95,11 @@ class LessonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'DELETE':
             permission_classes = [permissions.IsAuthenticated, IsOwner]
         elif self.request.method in ['PUT', 'PATCH']:
-            permission_classes = [permissions.IsAuthenticated, IsModeratorOrOwner]
+            permission_classes = [
+                permissions.IsAuthenticated, IsModeratorOrOwner]
         else:
-            permission_classes = [permissions.IsAuthenticated, IsModeratorOrOwner]
+            permission_classes = [
+                permissions.IsAuthenticated, IsModeratorOrOwner]
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):

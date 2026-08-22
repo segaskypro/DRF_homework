@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from lms.models import Course, Lesson
 
+
 class UserManager(BaseUserManager):
     """Менеджер для управления пользователями"""
 
@@ -42,5 +43,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
-

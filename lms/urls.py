@@ -13,6 +13,7 @@ router.register(r'courses', CourseViewSet, basename='course')
 urlpatterns = [
     path('', include(router.urls)),
     path('lessons/', LessonListCreateView.as_view(), name='lesson-list-create'),
-    path('lessons/<int:pk>/', LessonRetrieveUpdateDestroyView.as_view(), name='lesson-detail'),  # ✅ Проверь, что есть <int:pk>
+    path('lessons/<int:pk>/', LessonRetrieveUpdateDestroyView.as_view(),
+         name='lesson-detail'),  # ✅ Проверь, что есть <int:pk>
     path('subscribe/', SubscriptionView.as_view(), name='subscription'),
 ]

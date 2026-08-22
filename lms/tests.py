@@ -24,7 +24,8 @@ class LessonTests(TestCase):
         )
 
         # Создаем группу модераторов
-        self.moderator_group, _ = Group.objects.get_or_create(name='moderators')
+        self.moderator_group, _ = Group.objects.get_or_create(
+            name='moderators')
         self.moderator.groups.add(self.moderator_group)
 
         # Создаем курс
