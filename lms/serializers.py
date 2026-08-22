@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Course, Lesson, Subscription, Payment
-
+from .validators import YouTubeValidator
 
 
 class CourseSerializer(serializers.ModelSerializer):
