@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from lms.models import Course, Lesson
+
 
 
 class UserManager(BaseUserManager):
